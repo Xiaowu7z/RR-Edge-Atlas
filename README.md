@@ -73,8 +73,10 @@ d2e26ab5a56e0888ad21c6ae2e900a7446f7e7e548c2084a52babcb772409937
 
 ```text
 desktop/   电脑端 1.0 完整源码、网页界面、启动脚本与测试
-android/   Android 2.7.1 完整源码、测试、构建文件与 APK
+android/   Android 2.7.1 完整工程源码、测试与构建文件
 ```
+
+Android APK 作为 `v1.0` Release 正式资产发布；RR-vps 原仓库中的旧下载路径继续保留兼容。
 
 ## 使用边界
 
@@ -86,4 +88,3 @@ Cloudflare、Android 等名称与商标归各自权利人所有。本项目是�
 
 - [RR-vps](https://github.com/Xiaowu7z/RR-vps)：VPS 管理脚本与 RR Nexus 面板。
 - RR Nexus 浏览器优选只负责候选初筛；原生电脑端与 Android 端适合最终测试。
-

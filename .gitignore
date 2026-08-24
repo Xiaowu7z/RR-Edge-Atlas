@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.log
+*.csv
+result*.json
+.DS_Store
+.idea/
+.vscode/
+android/.gradle/
+android/build/
+android/app/build/
+android/*.apk
+dist/

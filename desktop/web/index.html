@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#060811">
+  <title>RR Cloudflare 域名优选</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="RR Edge Atlas 首页" data-i18n-aria="homeAria">
+      <span class="brand-mark" aria-hidden="true"><span>RR</span></span>
+      <span class="brand-copy">
+        <strong data-i18n="brandName">Edge Atlas</strong>
+        <small data-i18n="brandSub">RR Cloudflare Optimizer</small>
+      </span>
+    </a>
+    <div class="topbar-meta">
+      <span class="native-badge"><i></i><b data-i18n="localOnly">原生固定 IP 探测</b></span>
+      <span id="versionLabel">Desktop 1.0</span>
+      <button id="langToggle" class="lang-toggle" type="button" aria-label="Switch to English">EN</button>
+    </div>
+  </header>
+
+  <main id="top" class="page-shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow" data-i18n="eyebrow">与 Android 2.7.1 同源算法</p>
+        <h1><span class="hero-primary" data-i18n="heroTitle">找到这条网络上，</span><br><span class="hero-accent" data-i18n="heroSubtitle">真正稳定的 Cloudflare 域名。</span></h1>
+        <p class="hero-lead" data-i18n="heroLead">固定候选 IP、保持 speed.cloudflare.com 的 SNI 与证书校验，经过 Pre、Micro、Full 三层筛选。排名首先看最差地址底线，失败测速按 0 计。</p>
+        <div class="hero-pills">
+          <span data-i18n="pillPool">1000 域名池</span>
+          <span data-i18n="pillStack">IPv4 / IPv6</span>
+          <span data-i18n="pillLocal">三网可用</span>
+          <span data-i18n="pillExport">POP 漂移复核</span>
+        </div>
+      </div>
+      <div class="signal-card" aria-hidden="true">
+        <div class="signal-head"><span data-i18n="signalTitle">LIVE ROUTE MODEL</span><span class="signal-live" data-i18n="signalLocal">READY</span></div>
+        <div class="signal-orbit signal-orbit-one"><i></i></div>
+        <div class="signal-orbit signal-orbit-two"><i></i><i></i></div>
+        <div class="signal-core"><strong>CF</strong><small data-i18n="signalSelect">EDGE</small></div>
+        <div class="signal-city city-hkg"><span>HK</span> <b>5</b></div>
+        <div class="signal-city city-nrt"><span>NRT</span> <b>4</b></div>
+        <div class="signal-city city-sin"><span>SIN</span> <b>3</b></div>
+        <div class="signal-foot"><span data-i18n="localSample">Address Floor</span><strong data-i18n="ready">Priority 01</strong></div>
+      </div>
+    </section>
+
+    <section class="workspace-grid">
+      <form id="optimizerForm" class="panel control-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker" data-i18n="preferencesKicker">RUN CONFIGURATION</p>
+            <h2 data-i18n="preferencesTitle">开始一轮优选</h2>
+          </div>
+          <span id="poolCount" class="count-chip">读取域名池…</span>
+        </div>
+
+        <fieldset>
+          <legend><span>01</span><b data-i18n="networkLegend">当前网络</b></legend>
+          <div class="operator-grid">
+            <label><input type="radio" name="operator" value="自动" checked><span data-i18n="operatorAuto">自动</span></label>
+            <label><input type="radio" name="operator" value="中国移动"><span data-i18n="operatorMobile">移动</span></label>
+            <label><input type="radio" name="operator" value="中国电信"><span data-i18n="operatorTelecom">电信</span></label>
+            <label><input type="radio" name="operator" value="中国联通"><span data-i18n="operatorUnicom">联通</span></label>
+          </div>
+          <p class="field-note" data-i18n="operatorNote">标签只用于历史记录，不会人为修改排名。请在需要使用域名的同一条网络上测试。</p>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>02</span><b data-i18n="stackLegend">协议栈</b></legend>
+          <div class="segment-control">
+            <label><input type="radio" name="family" value="ipv4"><span>IPv4</span></label>
+            <label><input type="radio" name="family" value="ipv6"><span>IPv6</span></label>
+            <label><input type="radio" name="family" value="dual" checked><span data-i18n="stackDual">双栈</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>03</span><b data-i18n="modeLegend">测速策略</b></legend>
+          <div class="mode-grid">
+            <label class="mode-card">
+              <input type="radio" name="mode" value="balanced" checked>
+              <span class="mode-content">
+                <i class="mode-icon mode-balanced">≈</i>
+                <strong><span data-i18n="balancedTitle">均衡模式</span> <em data-i18n="recommended">推荐</em></strong>
+                <small data-i18n="balancedDesc">适合三网日常优选，5 个域名进入最终决赛。</small>
+              </span>
+            </label>
+            <label class="mode-card">
+              <input type="radio" name="mode" value="asia">
+              <span class="mode-content">
+                <i class="mode-icon mode-asia">⌁</i>
+                <strong data-i18n="regionTitle">亚洲入口狩猎</strong>
+                <small data-i18n="regionDesc">优先 HKG、NRT、SIN，扩大到 20 个决赛名额。</small>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span>04</span><b data-i18n="scopeLegend">候选规模</b></legend>
+          <select id="limitSelect" name="limit">
+            <option value="0" data-i18n="scopeFull">完整 1000 域名 · 正式测试</option>
+            <option value="200" data-i18n="scope200">前 200 域名 · 快速预览</option>
+            <option value="50" data-i18n="scope50">前 50 域名 · 调试检查</option>
+          </select>
+          <p class="traffic-note"><b data-i18n="trafficTitle">流量提醒</b><span data-i18n="trafficNote">：DNS 初筛不下载文件；进入 Pre、Micro、Full 后才产生流量。双栈与亚洲狩猎耗时和流量更高。</span></p>
+        </fieldset>
+
+        <div class="action-row">
+          <button id="startButton" class="primary-button" type="submit">
+            <span data-i18n="start">开始原生优选</span><b>→</b>
+          </button>
+          <button id="stopButton" class="stop-button" type="button" disabled data-i18n="stop">停止</button>
+        </div>
+      </form>
+
+      <section class="panel monitor-panel" aria-live="polite">
+        <div class="panel-heading monitor-heading">
+          <div>
+            <p class="section-kicker" data-i18n="progressKicker">MEASUREMENT CONSOLE</p>
+            <h2 data-i18n="progressTitle">实时状态</h2>
+          </div>
+          <span id="statusBadge" class="status-badge idle"><i></i><b data-i18n="idle">待命</b></span>
+        </div>
+        <div class="stage-card">
+          <div class="stage-copy">
+            <span id="stageName" data-i18n="waitingStart">等待开始</span>
+            <strong id="stageCounter">0 / 0</strong>
+          </div>
+          <progress id="stageProgress" max="100" value="0">0%</progress>
+          <p id="stageDetail" data-i18n="stageIdle">选择参数后开始，浏览器关闭不会改变测速算法。</p>
+        </div>
+        <div class="metric-strip">
+          <div><small data-i18n="runLocation">探测方式</small><strong data-i18n="onDevice">固定 IP + SNI</strong></div>
+          <div><small data-i18n="compareMethod">连接模型</small><strong data-i18n="stagedTest">HTTP/1.1 冷连接</strong></div>
+          <div><small data-i18n="integrity">完整性</small><strong>≥ 80%</strong></div>
+        </div>
+        <div class="console-wrap">
+          <div class="console-top"><span><i></i><i></i><i></i></span><b>rr-optimizer.log</b></div>
+          <pre id="logOutput" data-i18n="waitingTask">等待测速任务…</pre>
+        </div>
+        <div id="errorBox" class="error-box" hidden></div>
+      </section>
+    </section>
+
+    <section id="resultSection" class="results-section" hidden>
+      <div class="results-heading">
+        <div>
+          <p class="section-kicker" data-i18n="resultsKicker">FINAL ADDRESS FLOOR RANKING</p>
+          <h2 data-i18n="resultsTitle">本轮结果</h2>
+          <p data-i18n="resultsDesc">第一排序键是域名所有 Full 地址中最差的成绩；任一地址失败，底线直接为 0。</p>
+        </div>
+        <div class="result-actions">
+          <a class="ghost-button" href="/api/export?format=csv"><span data-i18n="exportCsv">导出 CSV</span></a>
+          <a class="ghost-button" href="/api/export?format=json"><span data-i18n="exportJson">导出 JSON</span></a>
+        </div>
+      </div>
+      <div id="familyTabs" class="family-tabs"></div>
+      <article id="winnerCard" class="winner-card"></article>
+      <div class="table-shell">
+        <table>
+          <thead><tr><th data-i18n="thDomain">排名 / 域名</th><th data-i18n="thFloor">地址底线</th><th data-i18n="thAverage">平均速度</th><th data-i18n="thSuccess">成功率</th><th data-i18n="thVariation">波动</th><th>POP</th><th data-i18n="thAddress">地址</th></tr></thead>
+          <tbody id="resultRows"></tbody>
+        </table>
+      </div>
+      <p class="result-footnote" data-i18n="resultNote">结果只代表本轮、当前网络与当前出口。更换 Wi-Fi、运营商、VPN 或出口后请重新测试。</p>
+    </section>
+
+    <section class="method-grid">
+      <article>
+        <span>01</span><h3 data-i18n="method1Title">冻结 DNS 快照</h3><p data-i18n="method1Desc">1000 个域名只解析一次，过滤非 Cloudflare 地址并按 IP 去重，后续阶段不重新解析。</p>
+      </article>
+      <article>
+        <span>02</span><h3 data-i18n="method2Title">三层真实下载</h3><p data-i18n="method2Desc">Pre 快速淘汰，Micro 小流量复核，Full 完整测速覆盖晋级域名的每个地址。</p>
+      </article>
+      <article>
+        <span>03</span><h3 data-i18n="method3Title">最差地址优先</h3><p data-i18n="method3Desc">失败按 0 计，先比较地址底线，再比较成功率、最低速度、平均速度、波动和 TTFB。</p>
+      </article>
+    </section>
+
+    <aside class="legal-note">
+      <span data-i18n="legalTitle">使用边界 · 非官方独立工具</span>
+      <p data-i18n="legalText">本工具仅用于个人在自有或获授权网络中的质量评估与域名选择，不提供端口扫描、漏洞探测、压力测试或绕过访问控制能力。测试对象仅为公开可访问的域名与公开测试端点。请遵守所在地法律和相关服务条款；Cloudflare 等名称与商标归其权利人所有，本工具与相关服务商不存在隶属、合作、赞助或背书关系。</p>
+    </aside>
+  </main>
+
+  <footer><span data-i18n="footerBrand">RR Edge Atlas · Local only</span><span data-i18n="footerPrivacy">数据保存在本机，不上传测速结果</span></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
