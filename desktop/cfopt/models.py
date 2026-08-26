@@ -174,7 +174,7 @@ class OptimizerResult:
     families: list[FamilyRunResult]
     elapsed_seconds: float
     cancelled: bool = False
-    version: str = "1.0"
+    version: str = "1.1"
 
     def to_dict(self) -> dict[str, Any]:
         return {

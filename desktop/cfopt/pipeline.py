@@ -11,6 +11,7 @@ from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Callable, Iterable
 
+from .domain_sources import parse_domain_source
 from .models import (
     ASIA_HUNT,
     BALANCED,
@@ -59,6 +60,9 @@ def default_domains_path() -> Path:
 
 def load_domains(path: Path | None = None, limit: int = 0) -> list[str]:
     source = path or default_domains_path()
+    if path is not None:
+        domains = parse_domain_source(source.read_text(encoding="utf-8-sig"), source.name).domains
+        return domains[:limit] if limit > 0 else domains
     domains: list[str] = []
     seen: set[str] = set()
     for raw in source.read_text(encoding="utf-8-sig").splitlines():
@@ -600,6 +604,7 @@ def run_optimizer(
     operator: str = "自动",
     limit: int = 0,
     domains_path: Path | None = None,
+    domains: Iterable[str] | None = None,
     cancel_event: threading.Event | None = None,
     on_stage: StageCallback | None = None,
     log: LogCallback | None = None,
@@ -616,7 +621,12 @@ def run_optimizer(
     stage_callback = on_stage or (lambda _name, _current, _total, _detail: None)
     logger = log or (lambda _message: None)
     params = MODES[mode]
-    domains = load_domains(domains_path, limit)
+    if domains is None:
+        candidate_domains = load_domains(domains_path, limit)
+    else:
+        candidate_domains = list(dict.fromkeys(item.strip().lower().rstrip(".") for item in domains if item.strip()))
+        if not candidate_domains:
+            raise ValueError("自定义域名列表为空")
     requested = ["IPv4", "IPv6"] if family == "dual" else ["IPv6" if family == "ipv6" else "IPv4"]
     started = time.perf_counter()
     initial_fingerprint = network_fingerprint()
@@ -625,7 +635,7 @@ def run_optimizer(
     try:
         for family_name in requested:
             _cancelled(cancel)
-            snapshot = build_snapshot(domains, family_name, cancel, stage_callback, logger, resolver)
+            snapshot = build_snapshot(candidate_domains, family_name, cancel, stage_callback, logger, resolver)
             if not snapshot.domain_to_ips:
                 logger(f"{family_name} 没有可用候选地址，已跳过")
                 continue
@@ -661,7 +671,7 @@ def run_optimizer(
         mode=mode,
         operator=operator,
         requested_family=family,
-        domain_count=len(domains),
+        domain_count=len(candidate_domains),
         families=family_results,
         elapsed_seconds=time.perf_counter() - started,
         cancelled=cancelled,

@@ -104,7 +104,29 @@
         </fieldset>
 
         <fieldset>
-          <legend><span>04</span><b data-i18n="scopeLegend">候选规模</b></legend>
+          <legend><span>04</span><b data-i18n="sourceLegend">候选来源</b></legend>
+          <div class="segment-control source-control">
+            <label><input type="radio" name="domainSource" value="builtin" checked><span data-i18n="sourceBuiltin">内置域名池</span></label>
+            <label><input type="radio" name="domainSource" value="custom"><span data-i18n="sourceCustom">我的域名</span></label>
+          </div>
+          <div id="customSourcePanel" class="custom-source" hidden>
+            <label class="field-label" for="domainInput" data-i18n="manualDomains">单个或多个域名</label>
+            <textarea id="domainInput" rows="5" spellcheck="false" data-i18n-placeholder="domainPlaceholder" placeholder="example.com&#10;cdn.example.net"></textarea>
+            <div class="import-actions">
+              <button id="parseDomainsButton" class="mini-button" type="button" data-i18n="parseDomains">识别输入</button>
+              <button id="chooseDomainFile" class="mini-button" type="button" data-i18n="chooseFile">导入文件</button>
+              <input id="domainFile" type="file" accept=".txt,.list,.csv,.tsv,.json,.conf,text/plain,text/csv,application/json" hidden>
+            </div>
+            <div class="subscription-row">
+              <input id="subscriptionUrl" type="url" inputmode="url" autocomplete="off" data-i18n-placeholder="subscriptionPlaceholder" placeholder="https://example.com/domains.txt">
+              <button id="fetchSubscriptionButton" class="mini-button" type="button" data-i18n="fetchSubscription">读取订阅</button>
+            </div>
+            <p id="domainSourceStatus" class="source-status" data-i18n="sourceWaiting">等待识别域名。支持 TXT、CSV、TSV、JSON 和 Base64 文本。</p>
+          </div>
+        </fieldset>
+
+        <fieldset id="scopeFieldset">
+          <legend><span>05</span><b data-i18n="scopeLegend">候选规模</b></legend>
           <select id="limitSelect" name="limit">
             <option value="0" data-i18n="scopeFull">完整 1000 域名 · 正式测试</option>
             <option value="200" data-i18n="scope200">前 200 域名 · 快速预览</option>
@@ -171,6 +193,28 @@
         </table>
       </div>
       <p class="result-footnote" data-i18n="resultNote">结果只代表本轮、当前网络与当前出口。更换 Wi-Fi、运营商、VPN 或出口后请重新测试。</p>
+    </section>
+
+    <section id="cloudflareSection" class="cloudflare-section panel">
+      <div class="cloudflare-heading">
+        <div>
+          <p class="section-kicker" data-i18n="cnameKicker">CLOUDFLARE DNS</p>
+          <h2 data-i18n="cnameTitle">把优选域名写入自己的 CNAME</h2>
+          <p data-i18n="cnameDesc">可手动填写目标，也可在测速结果中点“设为 CNAME”。同名 CNAME 会安全更新；遇到 A、AAAA 等冲突记录会停止。</p>
+        </div>
+        <span class="local-secret" data-i18n="tokenLocal">Token 仅在本机当次使用</span>
+      </div>
+      <form id="cnameForm" class="cname-form" autocomplete="off">
+        <label><span data-i18n="zoneNameLabel">Cloudflare 区域域名</span><input id="zoneName" name="zoneName" data-i18n-placeholder="zoneNamePlaceholder" placeholder="example.com" autocomplete="off"></label>
+        <label><span data-i18n="zoneIdLabel">Zone ID（可选）</span><input id="zoneId" name="zoneId" data-i18n-placeholder="zoneIdPlaceholder" placeholder="32 位 Zone ID" maxlength="32" autocomplete="off"></label>
+        <label><span data-i18n="recordNameLabel">自己的 CNAME 域名</span><input id="recordName" name="recordName" data-i18n-placeholder="recordNamePlaceholder" placeholder="edge.example.com" required autocomplete="off"></label>
+        <label><span data-i18n="targetLabel">优选目标域名</span><input id="cnameTarget" name="target" data-i18n-placeholder="targetPlaceholder" placeholder="preferred.example.net" required autocomplete="off"></label>
+        <label class="token-field"><span data-i18n="tokenLabel">Cloudflare API Token</span><input id="apiToken" name="apiToken" type="password" data-i18n-placeholder="tokenPlaceholder" placeholder="仅需目标区域 DNS 编辑权限" required autocomplete="new-password"></label>
+        <label class="proxy-toggle"><input id="proxiedToggle" type="checkbox"><span><b data-i18n="proxyLabel">启用橙云代理</b><small data-i18n="proxyWarning">优选 CNAME 默认建议保持 DNS only；橙云可能改变实际入口，跨账号目标还可能触发 1014。</small></span></label>
+        <button id="saveCnameButton" class="primary-button cname-submit" type="submit"><span data-i18n="saveCname">新增 / 更新 CNAME</span><b>→</b></button>
+      </form>
+      <p class="cname-permission" data-i18n="tokenPermission">建议新建最小权限 Token：仅目标区域 DNS Edit。若不填 Zone ID、让工具按区域域名自动查找，还需 Zone Read。</p>
+      <div id="cnameStatus" class="cname-status" role="status" aria-live="polite" hidden></div>
     </section>
 
     <section class="method-grid">

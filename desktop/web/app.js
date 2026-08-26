@@ -16,6 +16,16 @@ const winnerCard = document.querySelector("#winnerCard");
 const resultRows = document.querySelector("#resultRows");
 const toast = document.querySelector("#toast");
 const langToggle = document.querySelector("#langToggle");
+const customSourcePanel = document.querySelector("#customSourcePanel");
+const scopeFieldset = document.querySelector("#scopeFieldset");
+const domainInput = document.querySelector("#domainInput");
+const domainFile = document.querySelector("#domainFile");
+const domainSourceStatus = document.querySelector("#domainSourceStatus");
+const subscriptionUrl = document.querySelector("#subscriptionUrl");
+const cnameForm = document.querySelector("#cnameForm");
+const cnameTarget = document.querySelector("#cnameTarget");
+const cnameStatus = document.querySelector("#cnameStatus");
+const saveCnameButton = document.querySelector("#saveCnameButton");
 
 let lastResultStamp = "";
 let latestResult = null;
@@ -23,6 +33,14 @@ let activeFamily = "";
 let toastTimer = 0;
 let lastState = null;
 let domainCount = 0;
+let requestToken = "";
+let maxSourceBytes = 1024 * 1024;
+let customDomains = [];
+let customSourceFormat = "";
+let parsedInputText = "";
+let sourceMessageKey = "sourceWaiting";
+let sourceMessageValues = {};
+let sourceMessageError = false;
 let currentLang = localStorage.getItem("rr-domain-language") === "en" ? "en" : "zh";
 
 const COPY = {
@@ -37,7 +55,11 @@ const COPY = {
     operatorNote: "标签只用于历史记录，不会人为修改排名。请在需要使用域名的同一条网络上测试。",
     stackLegend: "协议栈", stackDual: "双栈", modeLegend: "测速策略", balancedTitle: "均衡模式", recommended: "推荐",
     balancedDesc: "适合三网日常优选，5 个域名进入最终决赛。", regionTitle: "亚洲入口狩猎",
-    regionDesc: "优先 HKG、NRT、SIN，扩大到 20 个决赛名额。", scopeLegend: "候选规模",
+    regionDesc: "优先 HKG、NRT、SIN，扩大到 20 个决赛名额。", sourceLegend: "候选来源", sourceBuiltin: "内置域名池", sourceCustom: "我的域名",
+    manualDomains: "单个或多个域名", domainPlaceholder: "example.com\ncdn.example.net", parseDomains: "识别输入", chooseFile: "导入文件",
+    subscriptionPlaceholder: "https://example.com/domains.txt", fetchSubscription: "读取订阅", sourceWaiting: "等待识别域名。支持 TXT、CSV、TSV、JSON 和 Base64 文本。",
+    sourceDirty: "输入已改变，请重新识别", sourceLoading: "正在读取并识别…", sourceReady: "已识别 {count} 个域名 · {format}", sourceFailed: "域名源识别失败", fileTooLarge: "文件不能超过 1 MiB",
+    scopeLegend: "候选规模",
     scopeFull: "完整 1000 域名 · 正式测试", scope200: "前 200 域名 · 快速预览", scope50: "前 50 域名 · 调试检查",
     trafficTitle: "流量提醒", trafficNote: "：DNS 初筛不下载文件；进入 Pre、Micro、Full 后才产生流量。双栈与亚洲狩猎耗时和流量更高。",
     start: "开始原生优选", stop: "停止", progressKicker: "MEASUREMENT CONSOLE", progressTitle: "实时状态", idle: "待命",
@@ -54,12 +76,18 @@ const COPY = {
     legalTitle: "使用边界 · 非官方独立工具",
     legalText: "本工具仅用于个人在自有或获授权网络中的质量评估与域名选择，不提供端口扫描、漏洞探测、压力测试或绕过访问控制能力。测试对象仅为公开可访问的域名与公开测试端点。请遵守所在地法律和相关服务条款；Cloudflare 等名称与商标归其权利人所有，本工具与相关服务商不存在隶属、合作、赞助或背书关系。",
     footerBrand: "RR Edge Atlas · Local only", footerPrivacy: "数据保存在本机，不上传测速结果", poolCount: "{count} 个候选域名", poolUnavailable: "域名池不可用",
-    fullScopeShort: "完整 1000 域名", limitedScope: "前 {count} 个域名", dual: "双栈", balanced: "均衡模式", region: "亚洲入口狩猎",
+    fullScopeShort: "完整 1000 域名", limitedScope: "前 {count} 个域名", customScope: "自定义 {count} 个域名（仅测试这批）", dual: "双栈", balanced: "均衡模式", region: "亚洲入口狩猎",
     confirm: "将使用 {scope}、{stack}、{mode}开始真实下载测速。\n\n请确认当前网络就是最终使用域名的网络，并暂时关闭 VPN/代理。",
     started: "测速已开始", stopSent: "停止信号已发送", noResult: "本协议族没有有效结果", retryHint: "请查看日志后换网络或协议栈重试。",
     currentBest: "01 · 本轮冠军", regionResult: "亚洲入口榜", unknownPop: "POP 未知", stability: "稳定性", compareInsufficient: "参考对比数据不足",
     bestAddress: "最佳地址", floor: "地址底线", average: "完整平均", successVariation: "成功 / 波动", worstAddress: "最差地址",
-    copyDomain: "复制域名", copied: "域名已复制", copyFailed: "复制失败，请手动选择域名", serviceError: "无法连接本地服务",
+    copyDomain: "复制域名", setCname: "设为 CNAME", copied: "域名已复制", copyFailed: "复制失败，请手动选择域名", serviceError: "无法连接本地服务",
+    cnameKicker: "CLOUDFLARE DNS", cnameTitle: "把优选域名写入自己的 CNAME", cnameDesc: "可手动填写目标，也可在测速结果中点“设为 CNAME”。同名 CNAME 会安全更新；遇到 A、AAAA 等冲突记录会停止。",
+    tokenLocal: "Token 仅在本机当次使用", zoneNameLabel: "Cloudflare 区域域名", zoneIdLabel: "Zone ID（可选）", recordNameLabel: "自己的 CNAME 域名",
+    zoneNamePlaceholder: "example.com", zoneIdPlaceholder: "32 位 Zone ID", recordNamePlaceholder: "edge.example.com", targetPlaceholder: "preferred.example.net", tokenPlaceholder: "仅需目标区域 DNS 编辑权限",
+    targetLabel: "优选目标域名", tokenLabel: "Cloudflare API Token", proxyLabel: "启用橙云代理", proxyWarning: "优选 CNAME 默认建议保持 DNS only；橙云可能改变实际入口，跨账号目标还可能触发 1014。",
+    saveCname: "新增 / 更新 CNAME", tokenPermission: "建议新建最小权限 Token：仅目标区域 DNS Edit。若不填 Zone ID、让工具按区域域名自动查找，还需 Zone Read。",
+    cnameSelected: "已选中 {domain}，请填写自己的记录名和 Token", cnameSaving: "正在写入 Cloudflare DNS…", cnameCreated: "CNAME 已创建：{name} → {target}", cnameUpdated: "CNAME 已更新：{name} → {target}", cnameUnchanged: "CNAME 已是目标值，无需修改：{name} → {target}",
     stableReference: "参考域名表现稳定，继续保留", suggestCandidate: "建议改用当前候选", observeCandidate: "候选略有领先，建议继续观察", keepReference: "继续保留参考域名",
     excellent: "优秀", good: "良好", fair: "一般", poor: "较差"
   },
@@ -74,7 +102,11 @@ const COPY = {
     operatorNote: "The carrier label is stored with history only and never changes ranking. Test on the same network where the domain will be used.",
     stackLegend: "IP stack", stackDual: "Dual stack", modeLegend: "Benchmark strategy", balancedTitle: "Balanced mode", recommended: "Recommended",
     balancedDesc: "Designed for routine three-carrier testing; five domains reach the final.", regionTitle: "Asia entry hunt",
-    regionDesc: "Prioritizes HKG, NRT, and SIN, with twenty final slots.", scopeLegend: "Candidate scope",
+    regionDesc: "Prioritizes HKG, NRT, and SIN, with twenty final slots.", sourceLegend: "Candidate source", sourceBuiltin: "Built-in pool", sourceCustom: "My domains",
+    manualDomains: "One or more domains", domainPlaceholder: "example.com\ncdn.example.net", parseDomains: "Parse input", chooseFile: "Import file",
+    subscriptionPlaceholder: "https://example.com/domains.txt", fetchSubscription: "Load subscription", sourceWaiting: "Waiting for domains. Supports TXT, CSV, TSV, JSON, and Base64 text.",
+    sourceDirty: "Input changed; parse it again", sourceLoading: "Loading and parsing…", sourceReady: "Parsed {count} domains · {format}", sourceFailed: "Could not parse the domain source", fileTooLarge: "The file must not exceed 1 MiB",
+    scopeLegend: "Candidate scope",
     scopeFull: "Full 1,000 domains · Formal run", scope200: "First 200 domains · Quick preview", scope50: "First 50 domains · Diagnostic",
     trafficTitle: "Traffic note", trafficNote: ": DNS screening downloads nothing. Pre, Micro, and Full use traffic; dual stack and Asia hunt require more time and data.",
     start: "Start native benchmark", stop: "Stop", progressKicker: "MEASUREMENT CONSOLE", progressTitle: "Live Status", idle: "Idle",
@@ -91,12 +123,18 @@ const COPY = {
     legalTitle: "Usage boundary · Independent, unofficial tool",
     legalText: "This tool is only for personal network-quality evaluation and domain selection on networks you own or are authorized to test. It does not provide port scanning, vulnerability testing, stress testing, or access-control bypass features. Test targets are publicly reachable domains and public test endpoints. Follow applicable laws and service terms. Cloudflare and other names and marks belong to their owners; this tool is not affiliated with, partnered with, sponsored by, or endorsed by those providers.",
     footerBrand: "RR Edge Atlas · Local only", footerPrivacy: "Data stays on this device · No benchmark results uploaded", poolCount: "{count} candidate domains", poolUnavailable: "Domain pool unavailable",
-    fullScopeShort: "all 1,000 domains", limitedScope: "the first {count} domains", dual: "Dual stack", balanced: "Balanced mode", region: "Asia entry hunt",
+    fullScopeShort: "all 1,000 domains", limitedScope: "the first {count} domains", customScope: "{count} custom domains (only this set)", dual: "Dual stack", balanced: "Balanced mode", region: "Asia entry hunt",
     confirm: "Start real download benchmarking using {scope}, {stack}, and {mode}?\n\nMake sure this is the network where you will use the domain, and temporarily disable VPN/proxy services.",
     started: "Benchmark started", stopSent: "Stop request sent", noResult: "No valid result for this IP family", retryHint: "Review the log, then try another network or IP stack.",
     currentBest: "01 · RUN CHAMPION", regionResult: "Asia entry ranking", unknownPop: "POP unknown", stability: "Stability", compareInsufficient: "Not enough reference data",
     bestAddress: "Best address", floor: "Address floor", average: "Full average", successVariation: "Success / variation", worstAddress: "Worst address",
-    copyDomain: "Copy domain", copied: "Domain copied", copyFailed: "Copy failed. Select the domain manually.", serviceError: "Cannot connect to the local service",
+    copyDomain: "Copy domain", setCname: "Set as CNAME", copied: "Domain copied", copyFailed: "Copy failed. Select the domain manually.", serviceError: "Cannot connect to the local service",
+    cnameKicker: "CLOUDFLARE DNS", cnameTitle: "Point your own CNAME to a preferred domain", cnameDesc: "Enter a target manually or choose Set as CNAME in the results. Existing CNAMEs are updated safely; conflicting A or AAAA records stop the operation.",
+    tokenLocal: "Token is used once on this device", zoneNameLabel: "Cloudflare zone name", zoneIdLabel: "Zone ID (optional)", recordNameLabel: "Your CNAME hostname",
+    zoneNamePlaceholder: "example.com", zoneIdPlaceholder: "32-character Zone ID", recordNamePlaceholder: "edge.example.com", targetPlaceholder: "preferred.example.net", tokenPlaceholder: "DNS Edit for the target zone only",
+    targetLabel: "Preferred target domain", tokenLabel: "Cloudflare API Token", proxyLabel: "Enable Cloudflare proxy", proxyWarning: "DNS only is recommended for a preferred-domain CNAME. Proxying may change the actual entry point, and cross-account targets may trigger error 1014.",
+    saveCname: "Create / update CNAME", tokenPermission: "Use a least-privilege token with DNS Edit for only the target zone. Zone Read is also needed when the Zone ID is omitted and the zone is looked up by name.",
+    cnameSelected: "Selected {domain}. Enter your hostname and Token.", cnameSaving: "Updating Cloudflare DNS…", cnameCreated: "CNAME created: {name} → {target}", cnameUpdated: "CNAME updated: {name} → {target}", cnameUnchanged: "CNAME already matches: {name} → {target}",
     stableReference: "The reference domain remains stable", suggestCandidate: "Suggested candidate", observeCandidate: "Candidate is slightly ahead; keep observing", keepReference: "Keep the reference domain",
     excellent: "Excellent", good: "Good", fair: "Fair", poor: "Poor"
   }
@@ -143,7 +181,23 @@ function verdictText(family) {
 }
 
 function updatePoolLabel() {
-  document.querySelector("#poolCount").textContent = domainCount ? t("poolCount", { count: domainCount }) : t("poolUnavailable");
+  const custom = form.querySelector('input[name="domainSource"]:checked')?.value === "custom";
+  document.querySelector("#poolCount").textContent = custom
+    ? (customDomains.length ? t("customScope", { count: customDomains.length }) : t("sourceCustom"))
+    : (domainCount ? t("poolCount", { count: domainCount }) : t("poolUnavailable"));
+}
+
+function renderSourceStatus() {
+  domainSourceStatus.textContent = t(sourceMessageKey, sourceMessageValues);
+  domainSourceStatus.classList.toggle("error", sourceMessageError);
+  domainSourceStatus.classList.toggle("ready", sourceMessageKey === "sourceReady");
+}
+
+function setSourceStatus(key, values = {}, error = false) {
+  sourceMessageKey = key;
+  sourceMessageValues = values;
+  sourceMessageError = error;
+  renderSourceStatus();
 }
 
 function applyLanguage() {
@@ -155,9 +209,13 @@ function applyLanguage() {
   document.querySelectorAll("[data-i18n-aria]").forEach((element) => {
     element.setAttribute("aria-label", t(element.dataset.i18nAria));
   });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    element.setAttribute("placeholder", t(element.dataset.i18nPlaceholder));
+  });
   langToggle.textContent = currentLang === "zh" ? "EN" : "中";
   langToggle.setAttribute("aria-label", currentLang === "zh" ? "Switch to English" : "切换到中文");
   updatePoolLabel();
+  renderSourceStatus();
   if (lastState) updateStatus(lastState);
   if (latestResult) renderResults();
 }
@@ -189,8 +247,17 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => toast.classList.remove("show"), 1800);
 }
 
-async function request(url, options) {
-  const response = await fetch(url, options);
+async function request(url, options = {}) {
+  const requestOptions = { ...options };
+  const method = String(requestOptions.method || "GET").toUpperCase();
+  if (method !== "GET") {
+    const headers = new Headers(requestOptions.headers || {});
+    headers.set("Content-Type", "application/json");
+    if (requestToken) headers.set("X-RR-Request-Token", requestToken);
+    requestOptions.headers = headers;
+    if (requestOptions.body === undefined) requestOptions.body = "{}";
+  }
+  const response = await fetch(url, requestOptions);
   const body = await response.json();
   if (!response.ok) throw new Error(body.message || body.error || `HTTP ${response.status}`);
   return body;
@@ -200,12 +267,117 @@ function selected(name) {
   return form.querySelector(`input[name="${name}"]:checked`).value;
 }
 
+function useCustomSource() {
+  const customRadio = form.querySelector('input[name="domainSource"][value="custom"]');
+  customRadio.checked = true;
+  customSourcePanel.hidden = false;
+  scopeFieldset.hidden = true;
+  updatePoolLabel();
+}
+
+function syncSourceMode() {
+  const custom = selected("domainSource") === "custom";
+  customSourcePanel.hidden = !custom;
+  scopeFieldset.hidden = custom;
+  updatePoolLabel();
+}
+
+async function parseCustomText(text, filename = "manual.txt") {
+  if (!String(text).trim()) throw new Error(t("sourceWaiting"));
+  setSourceStatus("sourceLoading");
+  const answer = await request("/api/domains/parse", {
+    method: "POST",
+    body: JSON.stringify({ text, filename })
+  });
+  customDomains = Array.isArray(answer.domains) ? answer.domains : [];
+  customSourceFormat = String(answer.format || "TXT");
+  domainInput.value = customDomains.join("\n");
+  parsedInputText = domainInput.value;
+  useCustomSource();
+  setSourceStatus("sourceReady", { count: customDomains.length, format: customSourceFormat });
+  if (answer.warnings?.length) showToast(answer.warnings.join(" · "));
+  return customDomains;
+}
+
+async function ensureCustomDomains() {
+  if (customDomains.length && parsedInputText === domainInput.value) return customDomains;
+  return parseCustomText(domainInput.value);
+}
+
+form.querySelectorAll('input[name="domainSource"]').forEach((radio) => radio.addEventListener("change", syncSourceMode));
+
+domainInput.addEventListener("input", () => {
+  customDomains = [];
+  parsedInputText = "";
+  setSourceStatus("sourceDirty");
+  updatePoolLabel();
+});
+
+document.querySelector("#parseDomainsButton").addEventListener("click", async () => {
+  try {
+    await parseCustomText(domainInput.value);
+  } catch (error) {
+    setSourceStatus("sourceFailed", {}, true);
+    showToast(error.message);
+  }
+});
+
+document.querySelector("#chooseDomainFile").addEventListener("click", () => domainFile.click());
+
+domainFile.addEventListener("change", async () => {
+  const file = domainFile.files?.[0];
+  if (!file) return;
+  try {
+    if (file.size > maxSourceBytes) throw new Error(t("fileTooLarge"));
+    await parseCustomText(await file.text(), file.name);
+  } catch (error) {
+    setSourceStatus("sourceFailed", {}, true);
+    showToast(error.message);
+  } finally {
+    domainFile.value = "";
+  }
+});
+
+document.querySelector("#fetchSubscriptionButton").addEventListener("click", async () => {
+  const url = subscriptionUrl.value.trim();
+  try {
+    setSourceStatus("sourceLoading");
+    const answer = await request("/api/domains/fetch", {
+      method: "POST",
+      body: JSON.stringify({ url })
+    });
+    customDomains = Array.isArray(answer.domains) ? answer.domains : [];
+    customSourceFormat = String(answer.format || "TXT");
+    domainInput.value = customDomains.join("\n");
+    parsedInputText = domainInput.value;
+    useCustomSource();
+    setSourceStatus("sourceReady", { count: customDomains.length, format: customSourceFormat });
+    if (answer.warnings?.length) showToast(answer.warnings.join(" · "));
+  } catch (error) {
+    setSourceStatus("sourceFailed", {}, true);
+    showToast(error.message);
+  }
+});
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const limit = Number(document.querySelector("#limitSelect").value);
   const family = selected("family");
   const mode = selected("mode");
-  const scope = limit === 0 ? t("fullScopeShort") : t("limitedScope", { count: limit });
+  const source = selected("domainSource");
+  let domains = [];
+  if (source === "custom") {
+    try {
+      domains = await ensureCustomDomains();
+    } catch (error) {
+      setSourceStatus("sourceFailed", {}, true);
+      showToast(error.message);
+      return;
+    }
+  }
+  const scope = source === "custom"
+    ? t("customScope", { count: domains.length })
+    : (limit === 0 ? t("fullScopeShort") : t("limitedScope", { count: limit }));
   const stack = family === "dual" ? t("dual") : family.toUpperCase();
   const strategy = mode === "asia" ? t("region") : t("balanced");
   if (!window.confirm(t("confirm", { scope, stack, mode: strategy }))) return;
@@ -214,7 +386,9 @@ form.addEventListener("submit", async (event) => {
       operator: selected("operator"),
       family,
       mode,
-      limit
+      limit,
+      source,
+      domains
     };
     const answer = await request("/api/start", {
       method: "POST",
@@ -310,7 +484,7 @@ function renderResults() {
     const pop = row.primary_pop || "—";
     const ips = row.current_ips?.join(" · ") || "—";
     return `<tr>
-      <td><div class="rank-domain"><span class="rank-number">${index + 1}</span><div><strong>${escapeHtml(row.domain)}</strong><small>TTFB ${fmt(row.median_ttfb_ms)} ms · ${escapeHtml(stabilityText(row.stability))}</small><button class="copy-button" type="button" data-copy="${escapeHtml(row.domain)}">${escapeHtml(t("copyDomain"))}</button></div></div></td>
+      <td><div class="rank-domain"><span class="rank-number">${index + 1}</span><div><strong>${escapeHtml(row.domain)}</strong><small>TTFB ${fmt(row.median_ttfb_ms)} ms · ${escapeHtml(stabilityText(row.stability))}</small><div class="row-actions"><button class="copy-button" type="button" data-copy="${escapeHtml(row.domain)}">${escapeHtml(t("copyDomain"))}</button><button class="copy-button cname-button" type="button" data-cname="${escapeHtml(row.domain)}">${escapeHtml(t("setCname"))}</button></div></div></div></td>
       <td class="speed-cell"><strong>${fmt(row.address_floor_mbps)} Mbps</strong><small>${escapeHtml(t("worstAddress"))}</small></td>
       <td class="speed-cell"><strong>${fmt(row.avg_complete_mbps)} Mbps</strong><small>${fmt(row.mb_per_sec, 2)} MB/s</small></td>
       <td><span class="quality-pill">${fmt(row.success_rate_pct, 0)}%</span></td>
@@ -329,7 +503,49 @@ function renderResults() {
       }
     });
   });
+  resultRows.querySelectorAll("[data-cname]").forEach((button) => {
+    button.addEventListener("click", () => selectCnameTarget(button.dataset.cname));
+  });
 }
+
+function setCnameStatus(message, error = false) {
+  cnameStatus.hidden = false;
+  cnameStatus.textContent = message;
+  cnameStatus.classList.toggle("error", error);
+}
+
+function selectCnameTarget(domain) {
+  cnameTarget.value = domain || "";
+  setCnameStatus(t("cnameSelected", { domain }));
+  document.querySelector("#cloudflareSection").scrollIntoView({ behavior: "smooth", block: "center" });
+  window.setTimeout(() => document.querySelector("#recordName").focus(), 350);
+}
+
+cnameForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  saveCnameButton.disabled = true;
+  setCnameStatus(t("cnameSaving"));
+  try {
+    const answer = await request("/api/cloudflare/cname", {
+      method: "POST",
+      body: JSON.stringify({
+        api_token: document.querySelector("#apiToken").value,
+        zone_name: document.querySelector("#zoneName").value,
+        zone_id: document.querySelector("#zoneId").value,
+        record_name: document.querySelector("#recordName").value,
+        target: cnameTarget.value,
+        proxied: document.querySelector("#proxiedToggle").checked
+      })
+    });
+    const key = answer.operation === "created" ? "cnameCreated" : (answer.operation === "updated" ? "cnameUpdated" : "cnameUnchanged");
+    setCnameStatus(t(key, { name: answer.name, target: answer.target }));
+    document.querySelector("#apiToken").value = "";
+  } catch (error) {
+    setCnameStatus(error.message, true);
+  } finally {
+    saveCnameButton.disabled = false;
+  }
+});
 
 async function poll() {
   try {
@@ -344,10 +560,13 @@ async function poll() {
 
 async function initialize() {
   applyLanguage();
+  syncSourceMode();
   try {
     const config = await request("/api/config");
     document.querySelector("#versionLabel").textContent = `Desktop ${config.version}`;
     domainCount = Number(config.domain_count) || 0;
+    requestToken = String(config.request_token || "");
+    maxSourceBytes = Number(config.max_source_bytes) || maxSourceBytes;
     updatePoolLabel();
   } catch (_error) {
     domainCount = 0;
