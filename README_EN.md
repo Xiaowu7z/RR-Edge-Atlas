@@ -1,6 +1,6 @@
 # RR Edge Atlas
 
-> 📢 **[Join the official RR-vps community channel](https://t.me/GMgP4NG7lncwZGE1)**
+> 📱 **[Android update repository / Obtainium](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android)** · 📢 **[RR-vps community](https://t.me/GMgP4NG7lncwZGE1)**
 
 [中文](README.md) · [English](README_EN.md)
 
@@ -15,7 +15,7 @@ RR Edge Atlas is a local multi-platform domain-quality evaluation tool for deskt
 | Platform | Version | Notes | Download |
 | --- | --- | --- | --- |
 | Windows / macOS / Linux | **1.1** | Custom domains, file/subscription import, Cloudflare CNAME | [Release v1.1](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/tag/v1.1) |
-| Android | **2.8.0** | Native Kotlin with the same custom-domain and CNAME features | [Download APK](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.1/CF-Optimizer-2.8.0.apk) |
+| Android | **2.8.0** | Native Kotlin with the same custom-domain and CNAME features | [Dedicated downloads and updates](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android) |
 
 Desktop 1.1 and Android 2.8.0 support one or many custom domains, TXT/CSV/TSV/JSON/Base64 content detection, HTTP/HTTPS subscriptions, and safe Cloudflare CNAME create/update from a manual target or benchmark result.
 
@@ -46,6 +46,15 @@ The Android APK SHA-256 is:
 3758d8938ba573221caa83a2bd6f148eb43e88ca7f28cd8e74525242172764e7
 ```
 
+## Android updates with Obtainium
+
+1. Install Obtainium from its [official latest GitHub release](https://github.com/ImranR98/Obtainium/releases/latest). Most modern phones use `app-arm64-v8a-release.apk`; choose the universal `app-release.apk` if unsure. [F-Droid](https://f-droid.org/packages/dev.imranr.obtainium.fdroid/) is also supported.
+2. Tap [Add RR Edge Atlas Android to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.cfoptimizer%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FXiaowu7z%2FRR-Edge-Atlas-Android%22%2C%22author%22%3A%22Xiaowu7z%22%2C%22name%22%3A%22RR%20Edge%20Atlas%20Android%22%7D) and confirm the app in Obtainium.
+3. Android may ask you to allow Obtainium to install unknown apps on the first install or update. Grant the permission, return to Obtainium, and tap Install or Update.
+4. Later, refresh Obtainium or run an update check to download and install new Android releases.
+
+If the one-tap link does not open, use Add App in Obtainium and paste `https://github.com/Xiaowu7z/RR-Edge-Atlas-Android`. Existing Obtainium entries that track this mixed repository must be removed or edited; they do not migrate automatically.
+
 ## Repository layout
 
 ```text
@@ -53,7 +62,7 @@ desktop/   Desktop 1.1 source, local UI, launchers, and tests
 android/   Android 2.8.0 project source, tests, and build files
 ```
 
-The desktop archive and Android APK are published as official `v1.1` Release assets. The legacy RR-vps download path remains available as an archive.
+The desktop archive remains available from this repository's `v1.1` Release. Its Android APK is retained only as a historical archive; use [RR-Edge-Atlas-Android](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android) for current Android downloads and automatic updates.
 
 ## Usage boundary
 
@@ -61,4 +70,4 @@ This project is only for personal network-quality evaluation and domain selectio
 
 Cloudflare, Android, and other names and marks belong to their respective owners. This is an independent, unofficial project and is not affiliated with, partnered with, sponsored by, or endorsed by those providers. See [NOTICE.md](NOTICE.md).
 
-Related project: [RR-vps](https://github.com/Xiaowu7z/RR-vps).
+Related projects: [RR Edge Atlas Android](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android) and [RR-vps](https://github.com/Xiaowu7z/RR-vps).

@@ -1,10 +1,10 @@
-# CF 域名优选（Android）
+# RR Edge Atlas Android
 
 Cloudflare IP / 域名入口优选 Android 工具。原生 Kotlin，仅申请联网与网络状态权限，无广告。
 
 ## 当前版本
 
-**2.8.0**（[下载 `CF-Optimizer-2.8.0.apk`](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.1/CF-Optimizer-2.8.0.apk)，SHA-256：`3758d8938ba573221caa83a2bd6f148eb43e88ca7f28cd8e74525242172764e7`）
+**2.8.0**（[下载 `RR-Edge-Atlas-Android-2.8.0.apk`](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android/releases/download/v2.8.0/RR-Edge-Atlas-Android-2.8.0.apk)，SHA-256：`3758d8938ba573221caa83a2bd6f148eb43e88ca7f28cd8e74525242172764e7`）
 
 > 2.8.0 启用新的正式签名。已安装 2.7.1 的设备需要先卸载旧版再安装；卸载会清除应用本地历史记录。从 2.8.0 开始的后续正式版可以直接覆盖升级。证书指纹见 [RELEASE_SIGNING.md](RELEASE_SIGNING.md)。
 
@@ -20,6 +20,17 @@ Cloudflare IP / 域名入口优选 Android 工具。原生 Kotlin，仅申请联
 - 50 条历史记录；保留 2.7.1 的主页滚动与历史入口修复
 
 历史 APK 继续保留在 [RR-vps 原仓库归档](https://github.com/Xiaowu7z/RR-vps/tree/main/assets/cf-optimizer)。
+
+## Obtainium 自动更新
+
+Android 独立更新仓库为 [RR-Edge-Atlas-Android](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android)。推荐通过 Obtainium 添加该仓库，以免电脑端 Release 干扰 Android 版本检查。
+
+1. 从 [Obtainium 官方最新版本](https://github.com/ImranR98/Obtainium/releases/latest) 安装 Obtainium。大多数新款手机选择 `app-arm64-v8a-release.apk`；不确定时选择通用版 `app-release.apk`。也可通过 [F-Droid](https://f-droid.org/packages/dev.imranr.obtainium.fdroid/) 安装。
+2. 点击 [一键加入 RR Edge Atlas Android](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.cfoptimizer%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FXiaowu7z%2FRR-Edge-Atlas-Android%22%2C%22author%22%3A%22Xiaowu7z%22%2C%22name%22%3A%22RR%20Edge%20Atlas%20Android%22%7D)，选择 Obtainium 打开并确认添加。
+3. 首次安装或更新时，按 Android 提示允许 Obtainium“安装未知应用”，返回后点击安装或更新。
+4. 一键链接无法打开时，在 Obtainium 的“添加应用”中粘贴 `https://github.com/Xiaowu7z/RR-Edge-Atlas-Android`。
+
+已经添加旧混合仓库的 Obtainium 用户需要删除旧来源或手动改成 Android 独立仓库，新增仓库不会自动迁移旧来源。
 
 ## 自定义域名
 

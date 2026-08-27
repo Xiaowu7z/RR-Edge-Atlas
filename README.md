@@ -1,6 +1,6 @@
 # RR Edge Atlas
 
-> 📢 **[进入 RR-vps 官方交流频道](https://t.me/GMgP4NG7lncwZGE1)**
+> 📱 **[Android 独立更新仓库 / Obtainium](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android)** · 📢 **[RR-vps 官方交流频道](https://t.me/GMgP4NG7lncwZGE1)**
 
 [中文](README.md) · [English](README_EN.md)
 
@@ -15,7 +15,7 @@ RR Edge Atlas 是一个在用户本机运行的多端域名质量评估工具，
 | 平台 | 版本 | 说明 | 下载 |
 | --- | --- | --- | --- |
 | Windows / macOS / Linux | **1.1** | 自定义域名、文件/订阅导入、Cloudflare CNAME | [Release v1.1](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/tag/v1.1) |
-| Android | **2.8.0** | 原生 Kotlin，同步自定义域名与 Cloudflare CNAME | [直接下载 APK](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.1/CF-Optimizer-2.8.0.apk) |
+| Android | **2.8.0** | 原生 Kotlin，同步自定义域名与 Cloudflare CNAME | [独立下载与自动更新](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android) |
 
 Android 版适合中国移动、中国电信、中国联通三网优选。电脑端沿用 Android 2.8.0 的固定 IP、分层筛选与地址底线排序原理，方便没有 Android 环境的用户。
 
@@ -56,7 +56,7 @@ python rr_optimizer.py
 
 ## Android 快速开始
 
-下载并安装 [CF-Optimizer-2.8.0.apk](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.1/CF-Optimizer-2.8.0.apk)。APK SHA-256：
+下载并安装 [RR-Edge-Atlas-Android-2.8.0.apk](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android/releases/download/v2.8.0/RR-Edge-Atlas-Android-2.8.0.apk)。APK SHA-256：
 
 ```text
 3758d8938ba573221caa83a2bd6f148eb43e88ca7f28cd8e74525242172764e7
@@ -65,6 +65,24 @@ python rr_optimizer.py
 完整说明见 [android/README.md](android/README.md)。
 
 Android 可在首页切换到自定义域名，使用系统文件选择器或订阅导入；测速结果卡片可直接预填 Cloudflare CNAME 目标。系统文件选择器不需要存储权限，Cloudflare Token 不会写入文件、偏好设置、历史或日志。
+
+## 使用 Obtainium 自动更新 Android 版
+
+推荐 Android 用户把独立仓库添加到 Obtainium。这样电脑端和 Android 端即使分开发布，Obtainium 也只会检查 Android APK，不会被电脑端 ZIP 或版本标签干扰。
+
+1. 打开 [Obtainium 官方最新版本](https://github.com/ImranR98/Obtainium/releases/latest)。大多数新款安卓手机选择 `app-arm64-v8a-release.apk`；不确定处理器架构时选择通用版 `app-release.apk`。也可以通过 [F-Droid 安装 Obtainium](https://f-droid.org/packages/dev.imranr.obtainium.fdroid/)。
+2. 安装 Obtainium。若系统提示“禁止安装未知应用”，按提示允许当前浏览器或文件管理器安装本次 APK。
+3. 点击 [一键加入 RR Edge Atlas Android](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.cfoptimizer%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FXiaowu7z%2FRR-Edge-Atlas-Android%22%2C%22author%22%3A%22Xiaowu7z%22%2C%22name%22%3A%22RR%20Edge%20Atlas%20Android%22%7D)，选择使用 Obtainium 打开并确认添加。
+4. 首次安装或更新 RR Edge Atlas Android 时，允许 Obtainium“安装未知应用”，返回 Obtainium 后点击“安装”或“更新”。
+5. 以后在 Obtainium 中下拉刷新或点击检查更新，发现新版本后即可直接覆盖安装。
+
+如果一键链接没有自动打开，可在 Obtainium 中点击“添加应用”，手动粘贴：
+
+```text
+https://github.com/Xiaowu7z/RR-Edge-Atlas-Android
+```
+
+已经在 Obtainium 中添加过本混合仓库的用户，需要删除旧来源或把来源地址改成上面的 Android 独立仓库；Obtainium 不会自动迁移到新增仓库。
 
 ## 核心方法
 
@@ -84,7 +102,7 @@ desktop/   电脑端 1.1 源码、网页界面、启动脚本与测试
 android/   Android 2.8.0 完整工程源码、测试与构建文件
 ```
 
-电脑端压缩包与 Android APK 作为 `v1.1` Release 正式资产发布；RR-vps 原仓库中的旧下载路径继续保留归档。
+电脑端压缩包继续通过本仓库的 `v1.1` Release 发布；原 `v1.1` 中的 Android APK 仅作为历史归档保留，当前 Android 下载与自动更新请使用 [RR-Edge-Atlas-Android](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android)。
 
 ## 使用边界
 
@@ -94,5 +112,6 @@ Cloudflare、Android 等名称与商标归各自权利人所有。本项目是�
 
 ## 致谢与关联项目
 
+- [RR Edge Atlas Android](https://github.com/Xiaowu7z/RR-Edge-Atlas-Android)：Android 独立 APK、Release 与 Obtainium 更新入口。
 - [RR-vps](https://github.com/Xiaowu7z/RR-vps)：VPS 管理脚本与 RR Nexus 面板。
 - RR Nexus 浏览器优选只负责候选初筛；原生电脑端与 Android 端适合最终测试。
