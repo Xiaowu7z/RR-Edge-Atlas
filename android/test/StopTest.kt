@@ -41,7 +41,9 @@ fun main() = runBlocking {
     run {
         println("\n=== 用例2：runFamily 取消传播 ===")
         try {
-            val snap = Pipeline.buildSnapshot(listOf("www.nexusmods.com", "cloudflare.com"), "IPv4") {}
+            val snap = Pipeline.buildSnapshot(
+                listOf("www.nexusmods.com", "cloudflare.com"), "IPv4", log = {}
+            )
             val t0 = System.currentTimeMillis()
             var cancelled = false
             val deferred = async(Dispatchers.Default) {
@@ -78,7 +80,7 @@ fun main() = runBlocking {
             val t0 = System.currentTimeMillis()
             var cancelled = false
             val deferred = async(Dispatchers.IO) {
-                Pipeline.buildSnapshot(domains, "IPv4") {}
+                Pipeline.buildSnapshot(domains, "IPv4", log = {})
             }
             delay(150)
             deferred.cancel()

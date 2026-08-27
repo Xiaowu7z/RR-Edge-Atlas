@@ -19,7 +19,7 @@ RR Edge Atlas 是一个在用户本机运行的多端域名质量评估工具，
 
 Android 版适合中国移动、中国电信、中国联通三网优选，测试结果可直接用于实际配置。电脑端沿用 Android 2.7.1 的固定 IP、分层筛选与地址底线排序原理，方便没有 Android 环境的用户。
 
-> `main` 分支电脑端已进入 **1.1 源码版**：支持单个/批量自定义域名、TXT/CSV/TSV/JSON/Base64 文件识别、HTTP/HTTPS 域名订阅，以及把手选或测速结果安全新增/更新到用户自己的 Cloudflare CNAME。正式下载包仍为上表所列 v1.0。
+> 当前**未合并功能分支**已在电脑端 1.1 与 Android 2.7.1 源码同步加入：单个/批量自定义域名、TXT/CSV/TSV/JSON/Base64 文件识别、HTTP/HTTPS 域名订阅，以及把手选或测速结果安全新增/更新到用户自己的 Cloudflare CNAME。正式下载包仍为上表所列 v1.0，尚不包含这些分支功能。
 
 ## 电脑端快速开始
 
@@ -61,6 +61,8 @@ d2e26ab5a56e0888ad21c6ae2e900a7446f7e7e548c2084a52babcb772409937
 ```
 
 完整说明见 [android/README.md](android/README.md)。
+
+当前功能分支的 Android 源码可在首页切换到自定义域名，使用系统文件选择器或订阅导入；测速结果卡片可直接预填 Cloudflare CNAME 目标。系统文件选择器不需要存储权限，Cloudflare Token 不会写入文件、偏好设置、历史或日志。
 
 ## 核心方法
 

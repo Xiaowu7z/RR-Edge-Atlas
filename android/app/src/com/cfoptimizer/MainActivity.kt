@@ -2,8 +2,8 @@ package com.cfoptimizer
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
@@ -15,6 +15,8 @@ import android.view.animation.DecelerateInterpolator
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
+import android.provider.OpenableColumns
+import android.text.InputType
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -22,6 +24,7 @@ import com.cfoptimizer.engine.CfRanges
 import com.cfoptimizer.engine.Pipeline
 import com.cfoptimizer.engine.Ranker
 import kotlinx.coroutines.*
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -39,6 +42,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  * - 结果页一次性构建卡片，不做高频全文本重绘。
  */
 class MainActivity : Activity() {
+
+    companion object {
+        private const val REQUEST_OPEN_DOMAIN_FILE = 701
+    }
 
     // ---- 主题色 ----
     // DMIT 美术风格（深色面板科技风）：深蓝黑底 + #0088FF 品牌蓝 + 亮绿状态
@@ -65,6 +72,10 @@ class MainActivity : Activity() {
     private lateinit var percentLabel: TextView
     private lateinit var logView: TextView
     private lateinit var resultContainer: LinearLayout
+    private lateinit var customSourcePanel: LinearLayout
+    private lateinit var customDomainInput: EditText
+    private lateinit var subscriptionInput: EditText
+    private lateinit var customSourceStatus: TextView
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var job: Job? = null
@@ -75,6 +86,10 @@ class MainActivity : Activity() {
     private var profileMode = "均衡"        // 均衡 / 亚洲入口狩猎
     private var lineLabelMode = "自动"       // 自动 / 中国移动 / 中国电信 / 中国联通
     private var builtinDomains: List<String> = emptyList()
+    private var domainSourceMode = "内置"
+    private var customDomains: List<String> = emptyList()
+    private var customSourceDescription = "尚未载入"
+    private var appliedCustomText = ""
 
     // ---- 日志节流 ----
     private val logQueue = ConcurrentLinkedQueue<String>()
@@ -201,6 +216,92 @@ class MainActivity : Activity() {
             topMargin = dp(18)
         })
 
+        root.addView(cardContainer {
+            addView(sectionLabel("候选域名来源"))
+            addView(buildSegmented(
+                listOf("内置", "自定义"),
+                labels = listOf("内置 1000 域名", "自定义域名"),
+                initial = "内置"
+            ) { selected ->
+                domainSourceMode = selected
+                customSourcePanel.visibility = if (selected == "自定义") View.VISIBLE else View.GONE
+                refreshCustomSourceStatus()
+            })
+            addView(dataLine(
+                "自定义模式只测试本次载入的域名，不会混入内置池或 ${Pipeline.BASELINE_DOMAIN}。",
+                11.5f, C_MUTED
+            ))
+
+            customSourcePanel = LinearLayout(this@MainActivity).apply {
+                orientation = LinearLayout.VERTICAL
+                visibility = View.GONE
+                customDomainInput = styledInput(
+                    hint = "输入单个或多个域名；可换行、空格、逗号分隔",
+                    multiline = true
+                ).apply { minLines = 3; maxLines = 7 }
+                addView(customDomainInput, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(12) })
+
+                addView(Button(this@MainActivity).apply {
+                    text = "应用输入内容"
+                    setAllCaps(false)
+                    setTextColor(Color.WHITE)
+                    background = rounded(C_ACCENT, 10)
+                    setOnClickListener { applyManualDomainInput(showToast = true) }
+                }, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(8) })
+
+                addView(Button(this@MainActivity).apply {
+                    text = "导入域名文件"
+                    setAllCaps(false)
+                    setTextColor(C_ACCENT)
+                    background = rounded(C_BTN_OFF, 10, C_STROKE)
+                    setOnClickListener { openDomainFilePicker() }
+                }, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(8) })
+                addView(dataLine(
+                    "按内容识别 TXT / CSV / TSV / JSON / Base64；UTF-8 或 GB18030，最大 1 MiB / 5000 个。",
+                    11f, C_MUTED
+                ))
+
+                subscriptionInput = styledInput("https://example.com/domains.txt")
+                addView(subscriptionInput, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(10) })
+                addView(Button(this@MainActivity).apply {
+                    text = "导入订阅链接"
+                    setAllCaps(false)
+                    setTextColor(C_ACCENT)
+                    background = rounded(C_BTN_OFF, 10, C_STROKE)
+                    setOnClickListener { importSubscription(this) }
+                }, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(8) })
+                addView(dataLine(
+                    "仅 HTTP/HTTPS、公网地址和 80/443 端口；逐跳校验重定向。HTTP 可被链路篡改，优先用 HTTPS。",
+                    11f, C_MUTED
+                ))
+
+                customSourceStatus = dataLine("自定义域名：尚未载入", 12f, C_SUB, true)
+                addView(customSourceStatus, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(10) })
+            }
+            addView(customSourcePanel)
+        }, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(14)
+        })
+
         root.addView(Button(this).apply {
             text = "开始测速"
             textSize = 16f
@@ -234,6 +335,19 @@ class MainActivity : Activity() {
         }, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
             topMargin = dp(16)
+        })
+
+        root.addView(Button(this).apply {
+            text = "Cloudflare CNAME"
+            textSize = 15f
+            setAllCaps(false)
+            setTextColor(C_GREEN)
+            background = rounded(C_CARD, 12, C_STROKE)
+            setPadding(dp(16), dp(12), dp(16), dp(12))
+            setOnClickListener { showCloudflareCnameDialog() }
+        }, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(10)
         })
 
         val homeScroll = ScrollView(this).apply {
@@ -433,6 +547,27 @@ class MainActivity : Activity() {
             setPadding(0, dp(18), 0, dp(6))
         }
 
+    private fun styledInput(
+        hint: String,
+        multiline: Boolean = false,
+        password: Boolean = false
+    ): EditText = EditText(this).apply {
+        this.hint = hint
+        setHintTextColor(C_MUTED)
+        setTextColor(C_TEXT)
+        textSize = 13f
+        background = rounded(C_BTN_OFF, 10, C_STROKE)
+        setPadding(dp(12), dp(10), dp(12), dp(10))
+        inputType = when {
+            password -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            multiline -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            else -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        }
+        isSingleLine = !multiline
+        if (multiline) gravity = Gravity.TOP or Gravity.START
+    }
+
     @SuppressLint("SetTextI18n")
     private fun buildSegmented(
         values: List<String>,
@@ -474,7 +609,8 @@ class MainActivity : Activity() {
     private fun refreshStatus() {
         val info = NetEnv.detect(this)
         val line = effectiveLineLabel(info)
-        statusText.text = "网络：${info.label} · 模式：$profileMode · 线路：$line"
+        val source = if (domainSourceMode == "自定义") "自定义 ${customDomains.size}" else "内置 ${builtinDomains.size}"
+        statusText.text = "网络：${info.label} · 模式：$profileMode · 线路：$line · 域名：$source"
         protoLabel.text = "已选：$protocolMode"
     }
 
@@ -490,6 +626,312 @@ class MainActivity : Activity() {
                 .filter { it.isNotEmpty() && !it.startsWith("#") }
                 .distinct()
         } catch (e: Exception) { emptyList() }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun refreshCustomSourceStatus(error: String? = null) {
+        if (!::customSourceStatus.isInitialized) return
+        if (error != null) {
+            customSourceStatus.text = "载入失败：$error"
+            customSourceStatus.setTextColor(C_RED)
+        } else if (customDomains.isEmpty()) {
+            customSourceStatus.text = "自定义域名：$customSourceDescription"
+            customSourceStatus.setTextColor(C_SUB)
+        } else {
+            customSourceStatus.text = "自定义域名：${customDomains.size} 个 · $customSourceDescription"
+            customSourceStatus.setTextColor(C_GREEN)
+        }
+        refreshStatus()
+    }
+
+    private fun applyManualDomainInput(showToast: Boolean): Boolean {
+        val text = customDomainInput.text?.toString().orEmpty()
+        if (text == appliedCustomText && customDomains.isNotEmpty()) return true
+        return try {
+            val parsed = DomainSources.parse(text)
+            applyParsedDomains(parsed, "手动输入")
+            if (showToast) Toast.makeText(this, "已载入 ${parsed.domains.size} 个域名", Toast.LENGTH_SHORT).show()
+            true
+        } catch (e: DomainSourceException) {
+            val message = e.message ?: "域名内容无效"
+            refreshCustomSourceStatus(message)
+            if (showToast) Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            false
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun applyParsedDomains(parsed: DomainParseResult, source: String) {
+        customDomains = parsed.domains
+        customSourceDescription = "$source · ${parsed.sourceFormat}" +
+            if (parsed.ignored > 0) " · 忽略 ${parsed.ignored}" else ""
+        val normalizedText = parsed.domains.joinToString("\n")
+        appliedCustomText = normalizedText
+        customDomainInput.setText(normalizedText)
+        customDomainInput.setSelection(0)
+        domainSourceMode = "自定义"
+        customSourcePanel.visibility = View.VISIBLE
+        refreshCustomSourceStatus()
+    }
+
+    private fun openDomainFilePicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                "text/plain", "text/csv", "text/tab-separated-values",
+                "application/json", "application/octet-stream"
+            ))
+        }
+        try {
+            startActivityForResult(intent, REQUEST_OPEN_DOMAIN_FILE)
+        } catch (_: Exception) {
+            Toast.makeText(this, "系统没有可用的文件选择器", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    @Deprecated("Deprecated in Android API; retained for the framework Activity file picker")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQUEST_OPEN_DOMAIN_FILE || resultCode != RESULT_OK) return
+        val uri = data?.data ?: return
+        customSourceStatus.text = "正在读取文件…"
+        customSourceStatus.setTextColor(C_SUB)
+        scope.launch {
+            try {
+                val (payload, filename) = readDomainFile(uri)
+                val parsed = DomainSources.parseBytes(payload, filename)
+                runOnUiThread {
+                    applyParsedDomains(parsed, "文件 $filename")
+                    Toast.makeText(this@MainActivity, "文件识别为 ${parsed.sourceFormat}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                val message = e.message?.take(180) ?: "文件读取失败"
+                runOnUiThread { refreshCustomSourceStatus(message) }
+            }
+        }
+    }
+
+    private fun readDomainFile(uri: android.net.Uri): Pair<ByteArray, String> {
+        var filename = "domains"
+        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex >= 0) filename = cursor.getString(nameIndex) ?: filename
+                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                if (sizeIndex >= 0 && !cursor.isNull(sizeIndex) && cursor.getLong(sizeIndex) > DomainSources.MAX_SOURCE_BYTES) {
+                    throw DomainSourceException("域名源文件不能超过 1 MiB")
+                }
+            }
+        }
+        val stream = contentResolver.openInputStream(uri) ?: throw DomainSourceException("无法读取所选文件")
+        stream.use { input ->
+            val output = ByteArrayOutputStream()
+            val buffer = ByteArray(16 * 1024)
+            var total = 0
+            while (true) {
+                val count = input.read(buffer)
+                if (count < 0) break
+                total += count
+                if (total > DomainSources.MAX_SOURCE_BYTES) {
+                    throw DomainSourceException("域名源文件不能超过 1 MiB")
+                }
+                output.write(buffer, 0, count)
+            }
+            return output.toByteArray() to filename.substringAfterLast('/').substringAfterLast('\\')
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun importSubscription(button: Button) {
+        val url = subscriptionInput.text?.toString()?.trim().orEmpty()
+        if (url.isEmpty()) {
+            refreshCustomSourceStatus("请填写订阅链接")
+            return
+        }
+        button.isEnabled = false
+        customSourceStatus.text = "正在安全下载订阅…"
+        customSourceStatus.setTextColor(C_SUB)
+        scope.launch {
+            try {
+                val result = DomainSubscription.fetch(url)
+                runOnUiThread {
+                    button.isEnabled = true
+                    subscriptionInput.setText(result.finalUrl)
+                    applyParsedDomains(result.parsed, "订阅 ${result.finalUrl}")
+                    Toast.makeText(
+                        this@MainActivity,
+                        "订阅识别为 ${result.parsed.sourceFormat}，共 ${result.parsed.domains.size} 个",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                val message = e.message?.take(180) ?: "订阅导入失败"
+                runOnUiThread {
+                    button.isEnabled = true
+                    refreshCustomSourceStatus(message)
+                }
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun showCloudflareCnameDialog(prefillTarget: String = "") {
+        val dialog = Dialog(this)
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(20), dp(20), dp(16))
+            background = rounded(C_CARD, 18, C_STROKE)
+        }
+        root.addView(TextView(this).apply {
+            text = "Cloudflare CNAME"
+            textSize = 20f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(C_TEXT)
+        })
+        root.addView(dataLine(
+            "把你自己的 Cloudflare 域名新增或更新为所选优选域名。不存在则创建，已有 CNAME 则更新；同名 A/AAAA 等记录不会被覆盖。",
+            12f, C_SUB
+        ))
+
+        val form = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dp(6), 0, dp(8))
+        }
+        fun addField(label: String, field: EditText) {
+            form.addView(dataLine(label, 12f, C_TEXT, true), LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(10) })
+            form.addView(field, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(5) })
+        }
+
+        val zoneNameField = styledInput("example.com（推荐填写）")
+        val zoneIdField = styledInput("32 位 Zone ID（可选）")
+        val recordField = styledInput("edge 或 edge.example.com；根记录可填 @")
+        val targetField = styledInput("优选域名，例如 preferred.example.net").apply {
+            setText(prefillTarget)
+        }
+        val tokenField = styledInput("Cloudflare API Token", password = true)
+        addField("区域域名", zoneNameField)
+        addField("Zone ID", zoneIdField)
+        addField("你的 CNAME 记录", recordField)
+        addField("CNAME 目标（优选域名）", targetField)
+        addField("API Token（仅本次请求使用，不保存）", tokenField)
+        form.addView(dataLine(
+            "Token 最小权限：Zone / DNS / Edit；若只填区域域名查询 Zone，再加 Zone / Zone / Read。",
+            11f, C_MUTED
+        ))
+
+        val proxiedCheck = CheckBox(this).apply {
+            text = "启用 Cloudflare 代理（橙云）"
+            setTextColor(C_TEXT)
+            buttonTintList = ColorStateList.valueOf(C_ACCENT)
+            isChecked = false
+            setPadding(0, dp(8), 0, 0)
+        }
+        form.addView(proxiedCheck)
+        form.addView(dataLine(
+            "默认 DNS only。橙云会改变实际路由；跨 Cloudflare 账号的 CNAME 目标还可能触发 Error 1014。",
+            11f, C_RED
+        ))
+        val resultText = dataLine("", 12f, C_SUB, true)
+        form.addView(resultText, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(8) })
+
+        val scroll = ScrollView(this).apply { addView(form) }
+        root.addView(scroll, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+        ).apply { topMargin = dp(6) })
+
+        val buttonRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.END
+        }
+        val cancelButton = Button(this).apply {
+            text = "取消"
+            setAllCaps(false)
+            setTextColor(C_SUB)
+            background = rounded(C_BTN_OFF, 10)
+            setOnClickListener { dialog.dismiss() }
+        }
+        buttonRow.addView(cancelButton, LinearLayout.LayoutParams(
+            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+        ).apply { rightMargin = dp(8) })
+        val writeButton = Button(this).apply {
+            text = "新增 / 更新 CNAME"
+            setAllCaps(false)
+            setTextColor(Color.WHITE)
+            background = rounded(C_ACCENT, 10)
+        }
+        buttonRow.addView(writeButton, LinearLayout.LayoutParams(
+            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.5f
+        ))
+        root.addView(buttonRow)
+
+        writeButton.setOnClickListener {
+            val token = tokenField.text?.toString().orEmpty()
+            val zoneName = zoneNameField.text?.toString().orEmpty()
+            val zoneId = zoneIdField.text?.toString().orEmpty()
+            val record = recordField.text?.toString().orEmpty()
+            val target = targetField.text?.toString().orEmpty()
+            val proxied = proxiedCheck.isChecked
+            tokenField.text?.clear()
+            writeButton.isEnabled = false
+            cancelButton.isEnabled = false
+            resultText.setTextColor(C_SUB)
+            resultText.text = "正在读取并写入 DNS；Token 已从输入框清除…"
+            scope.launch {
+                try {
+                    val result = CloudflareDns.upsertCname(
+                        apiToken = token,
+                        zoneId = zoneId,
+                        zoneName = zoneName,
+                        recordName = record,
+                        target = target,
+                        proxied = proxied
+                    )
+                    runOnUiThread {
+                        val action = when (result.operation) {
+                            "created" -> "已创建"
+                            "updated" -> "已更新"
+                            else -> "无需修改"
+                        }
+                        resultText.setTextColor(C_GREEN)
+                        resultText.text = "$action：${result.name} → ${result.target}（${if (result.proxied) "橙云" else "DNS only"}）"
+                        Toast.makeText(this@MainActivity, resultText.text, Toast.LENGTH_LONG).show()
+                        dialog.dismiss()
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    val message = e.message?.take(220) ?: "Cloudflare DNS 写入失败"
+                    runOnUiThread {
+                        writeButton.isEnabled = true
+                        cancelButton.isEnabled = true
+                        resultText.setTextColor(C_RED)
+                        resultText.text = "$message\nToken 未保存，请重新输入后重试。"
+                    }
+                }
+            }
+        }
+
+        dialog.setOnDismissListener { tokenField.text?.clear() }
+        dialog.setContentView(root)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+        val width = (resources.displayMetrics.widthPixels * 0.94f).toInt()
+        val height = (resources.displayMetrics.heightPixels * 0.88f).toInt()
+        dialog.window?.setLayout(width, height)
     }
 
     // ================= 日志节流（卡机修复核心） =================
@@ -596,6 +1038,7 @@ class MainActivity : Activity() {
 
     // ================= 流程 =================
     private fun preflightAndStart() {
+        if (domainSourceMode == "自定义" && !applyManualDomainInput(showToast = true)) return
         val info = NetEnv.detect(this)
         if (info.vpnActive) {
             showVpnDialog { launchRun(info) }
@@ -673,6 +1116,13 @@ class MainActivity : Activity() {
     private fun launchRun(info: NetEnv.NetInfo) {
         val asiaHunt = profileMode == "亚洲入口狩猎"
         val params = if (asiaHunt) Pipeline.ASIA_HUNT else Pipeline.BALANCED
+        val customMode = domainSourceMode == "自定义"
+        val domainsForRun = DomainSources.chooseCandidates(builtinDomains, customDomains, customMode)
+        val sourceForRun = if (customMode) customSourceDescription else "内置域名池"
+        if (domainsForRun.isEmpty()) {
+            Toast.makeText(this, "当前没有可测速的域名", Toast.LENGTH_LONG).show()
+            return
+        }
         val families = when (protocolMode) {
             "IPv4" -> listOf("IPv4")
             "IPv6" -> listOf("IPv6")
@@ -701,6 +1151,7 @@ class MainActivity : Activity() {
         job = scope.launch {
             try {
             appendLog("=== 开始（$profileMode / ${families.joinToString("+")} / 线路=${effectiveLineLabel(info)} / VPN=${if (info.vpnActive) "是" else "否"}）===")
+            appendLog("候选来源：$sourceForRun · ${domainsForRun.size} 个${if (customMode) " · 仅测自定义列表" else ""}")
             setStage("准备中")
             CfRanges.refresh()
             appendLog("Cloudflare 网段：IPv4=${if (CfRanges.v4FromOnline) "在线" else "内置备用"} IPv6=${if (CfRanges.v6FromOnline) "在线" else "内置备用"}")
@@ -721,7 +1172,7 @@ class MainActivity : Activity() {
             for (f in activeFamilies) {
                 setStage("解析 $f DNS 快照")
                 val snap = Pipeline.buildSnapshot(
-                    builtinDomains, f,
+                    domainsForRun, f,
                     log = { appendLog("  $it") },
                     onProgress = { done, total ->
                         if (done == total || done % 25 == 0) setStage("解析 $f DNS $done/$total")
@@ -1337,6 +1788,17 @@ class MainActivity : Activity() {
                 bold = true
             ))
         }
+        card.addView(Button(this).apply {
+            text = "将此优选域名设为 CNAME 目标"
+            textSize = 12f
+            setAllCaps(false)
+            setTextColor(C_GREEN)
+            background = rounded(C_BTN_OFF, 9, C_STROKE)
+            setOnClickListener { showCloudflareCnameDialog(m.domain) }
+        }, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(10) })
         return card
     }
 
