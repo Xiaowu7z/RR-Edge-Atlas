@@ -107,7 +107,7 @@ object DomainSubscription {
             val request = Request.Builder()
                 .url(current.uri.toASCIIString())
                 .header("Accept", "text/plain, application/json, text/csv, application/octet-stream")
-                .header("User-Agent", "RR-Edge-Atlas-Android/2.7.1")
+                .header("User-Agent", "RR-Edge-Atlas-Android/2.8.0")
                 .get()
                 .build()
             try {

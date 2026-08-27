@@ -46,7 +46,7 @@ let currentLang = localStorage.getItem("rr-domain-language") === "en" ? "en" : "
 const COPY = {
   zh: {
     documentTitle: "RR Cloudflare 域名优选", homeAria: "RR Edge Atlas 首页", brandName: "Edge Atlas", brandSub: "RR Cloudflare Optimizer", localOnly: "原生固定 IP 探测",
-    eyebrow: "与 Android 2.7.1 同源算法", heroTitle: "找到这条网络上，", heroSubtitle: "真正稳定的 Cloudflare 域名。",
+    eyebrow: "与 Android 2.8.0 同源算法", heroTitle: "找到这条网络上，", heroSubtitle: "真正稳定的 Cloudflare 域名。",
     heroLead: "固定候选 IP、保持 speed.cloudflare.com 的 SNI 与证书校验，经过 Pre、Micro、Full 三层筛选。排名首先看最差地址底线，失败测速按 0 计。",
     pillPool: "1000 域名池", pillStack: "IPv4 / IPv6", pillLocal: "三网可用", pillExport: "POP 漂移复核",
     signalTitle: "LIVE ROUTE MODEL", signalLocal: "READY", signalSelect: "EDGE", localSample: "Address Floor", ready: "Priority 01",
@@ -93,7 +93,7 @@ const COPY = {
   },
   en: {
     documentTitle: "RR Cloudflare Domain Optimizer", homeAria: "RR Edge Atlas home", brandName: "Edge Atlas", brandSub: "RR CLOUDFLARE OPTIMIZER", localOnly: "Native fixed-IP probing",
-    eyebrow: "SAME CORE LOGIC AS ANDROID 2.7.1", heroTitle: "Find the Cloudflare domain", heroSubtitle: "that stays stable on this network.",
+    eyebrow: "SAME CORE LOGIC AS ANDROID 2.8.0", heroTitle: "Find the Cloudflare domain", heroSubtitle: "that stays stable on this network.",
     heroLead: "Pin candidate IPs, preserve speed.cloudflare.com SNI and certificate validation, then run Pre, Micro, and Full stages. The worst-address floor ranks first, and failed transfers count as zero.",
     pillPool: "1,000-domain pool", pillStack: "IPv4 / IPv6", pillLocal: "Three carriers", pillExport: "POP drift review",
     signalTitle: "LIVE ROUTE MODEL", signalLocal: "READY", signalSelect: "EDGE", localSample: "Address Floor", ready: "Priority 01",

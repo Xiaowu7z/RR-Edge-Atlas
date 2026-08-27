@@ -14,10 +14,12 @@ RR Edge Atlas is a local multi-platform domain-quality evaluation tool for deskt
 
 | Platform | Version | Notes | Download |
 | --- | --- | --- | --- |
-| Windows / macOS / Linux | **1.0** | Native Python probing, local purple UI, Chinese/English switch | [Release v1.0](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/tag/v1.0) |
-| Android | **2.7.1** | Native Kotlin; field-tested across three Chinese carriers | [Download APK](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.0/CF-Optimizer-2.7.1.apk) |
+| Windows / macOS / Linux | **1.1** | Custom domains, file/subscription import, Cloudflare CNAME | [Release v1.1](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/tag/v1.1) |
+| Android | **2.8.0** | Native Kotlin with the same custom-domain and CNAME features | [Download APK](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.1/CF-Optimizer-2.8.0.apk) |
 
-> The current **unmerged feature branch** adds the same features to Desktop 1.1 and the Android 2.7.1 source: one or many custom domains, TXT/CSV/TSV/JSON/Base64 content detection, HTTP/HTTPS subscriptions, and safe Cloudflare CNAME create/update from a manual target or benchmark result. The packaged v1.0 downloads listed above do not yet contain these branch changes.
+Desktop 1.1 and Android 2.8.0 support one or many custom domains, TXT/CSV/TSV/JSON/Base64 content detection, HTTP/HTTPS subscriptions, and safe Cloudflare CNAME create/update from a manual target or benchmark result.
+
+> Android 2.8.0 starts using a new release signing certificate. Devices with 2.7.1 installed must uninstall it first; later official releases can upgrade directly from 2.8.0. Uninstalling clears local app history.
 
 The desktop edition requires Python 3.11 or newer and has no third-party Python dependencies. On Windows, extract the release and double-click `start-windows.bat`. On macOS or Linux, run:
 
@@ -35,23 +37,23 @@ The Cloudflare helper performs an upsert: it creates a missing CNAME, patches an
 Desktop package SHA-256:
 
 ```text
-569610261db2c4b3ad17a5d4ea8d4bcb597497d1bf889ace4980cbe4e6518bf3
+c8fb4ecfc30fc30f330f9d73c11129659cf042e957b73cc83eaaf4f7793bdfec
 ```
 
 The Android APK SHA-256 is:
 
 ```text
-d2e26ab5a56e0888ad21c6ae2e900a7446f7e7e548c2084a52babcb772409937
+3758d8938ba573221caa83a2bd6f148eb43e88ca7f28cd8e74525242172764e7
 ```
 
 ## Repository layout
 
 ```text
 desktop/   Desktop 1.1 source, local UI, launchers, and tests
-android/   Android 2.7.1 project source, tests, and build files
+android/   Android 2.8.0 project source, tests, and build files
 ```
 
-The Android APK is published as an official `v1.0` Release asset. The legacy RR-vps download path remains available for compatibility.
+The desktop archive and Android APK are published as official `v1.1` Release assets. The legacy RR-vps download path remains available as an archive.
 
 ## Usage boundary
 

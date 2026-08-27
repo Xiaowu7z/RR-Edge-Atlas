@@ -14,12 +14,14 @@ RR Edge Atlas 是一个在用户本机运行的多端域名质量评估工具，
 
 | 平台 | 版本 | 说明 | 下载 |
 | --- | --- | --- | --- |
-| Windows / macOS / Linux | **1.0** | Python 原生探测，本地紫黑 UI，中英文切换 | [Release v1.0](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/tag/v1.0) |
-| Android | **2.7.1** | 原生 Kotlin，已完成三网实际测试 | [直接下载 APK](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.0/CF-Optimizer-2.7.1.apk) |
+| Windows / macOS / Linux | **1.1** | 自定义域名、文件/订阅导入、Cloudflare CNAME | [Release v1.1](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/tag/v1.1) |
+| Android | **2.8.0** | 原生 Kotlin，同步自定义域名与 Cloudflare CNAME | [直接下载 APK](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.1/CF-Optimizer-2.8.0.apk) |
 
-Android 版适合中国移动、中国电信、中国联通三网优选，测试结果可直接用于实际配置。电脑端沿用 Android 2.7.1 的固定 IP、分层筛选与地址底线排序原理，方便没有 Android 环境的用户。
+Android 版适合中国移动、中国电信、中国联通三网优选。电脑端沿用 Android 2.8.0 的固定 IP、分层筛选与地址底线排序原理，方便没有 Android 环境的用户。
 
-> 当前**未合并功能分支**已在电脑端 1.1 与 Android 2.7.1 源码同步加入：单个/批量自定义域名、TXT/CSV/TSV/JSON/Base64 文件识别、HTTP/HTTPS 域名订阅，以及把手选或测速结果安全新增/更新到用户自己的 Cloudflare CNAME。正式下载包仍为上表所列 v1.0，尚不包含这些分支功能。
+电脑端 1.1 与 Android 2.8.0 均支持：单个/批量自定义域名、TXT/CSV/TSV/JSON/Base64 内容识别、HTTP/HTTPS 域名订阅，以及把手选或测速结果安全新增/更新到用户自己的 Cloudflare CNAME。
+
+> Android 2.8.0 启用新的正式签名。已安装 2.7.1 的设备需要先卸载旧版再安装；从 2.8.0 开始，后续正式版可以直接覆盖升级。卸载会清除应用本地历史记录。
 
 ## 电脑端快速开始
 
@@ -27,14 +29,14 @@ Android 版适合中国移动、中国电信、中国联通三网优选，测试
 
 Windows：
 
-1. 从 [Release v1.0](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/tag/v1.0) 下载 `RR-Edge-Atlas-Desktop-1.0.zip`。
+1. 从 [Release v1.1](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/tag/v1.1) 下载 `RR-Edge-Atlas-Desktop-1.1.zip`。
 2. 解压后双击 `start-windows.bat`。
 3. 保持命令窗口运行，在自动打开的本地页面开始测试。
 
 电脑端压缩包 SHA-256：
 
 ```text
-569610261db2c4b3ad17a5d4ea8d4bcb597497d1bf889ace4980cbe4e6518bf3
+c8fb4ecfc30fc30f330f9d73c11129659cf042e957b73cc83eaaf4f7793bdfec
 ```
 
 macOS / Linux：
@@ -54,15 +56,15 @@ python rr_optimizer.py
 
 ## Android 快速开始
 
-下载并安装 [CF-Optimizer-2.7.1.apk](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.0/CF-Optimizer-2.7.1.apk)。APK SHA-256：
+下载并安装 [CF-Optimizer-2.8.0.apk](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.1/CF-Optimizer-2.8.0.apk)。APK SHA-256：
 
 ```text
-d2e26ab5a56e0888ad21c6ae2e900a7446f7e7e548c2084a52babcb772409937
+3758d8938ba573221caa83a2bd6f148eb43e88ca7f28cd8e74525242172764e7
 ```
 
 完整说明见 [android/README.md](android/README.md)。
 
-当前功能分支的 Android 源码可在首页切换到自定义域名，使用系统文件选择器或订阅导入；测速结果卡片可直接预填 Cloudflare CNAME 目标。系统文件选择器不需要存储权限，Cloudflare Token 不会写入文件、偏好设置、历史或日志。
+Android 可在首页切换到自定义域名，使用系统文件选择器或订阅导入；测速结果卡片可直接预填 Cloudflare CNAME 目标。系统文件选择器不需要存储权限，Cloudflare Token 不会写入文件、偏好设置、历史或日志。
 
 ## 核心方法
 
@@ -79,10 +81,10 @@ d2e26ab5a56e0888ad21c6ae2e900a7446f7e7e548c2084a52babcb772409937
 
 ```text
 desktop/   电脑端 1.1 源码、网页界面、启动脚本与测试
-android/   Android 2.7.1 完整工程源码、测试与构建文件
+android/   Android 2.8.0 完整工程源码、测试与构建文件
 ```
 
-Android APK 作为 `v1.0` Release 正式资产发布；RR-vps 原仓库中的旧下载路径继续保留兼容。
+电脑端压缩包与 Android APK 作为 `v1.1` Release 正式资产发布；RR-vps 原仓库中的旧下载路径继续保留归档。
 
 ## 使用边界
 

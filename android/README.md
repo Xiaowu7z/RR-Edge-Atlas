@@ -4,11 +4,11 @@ Cloudflare IP / 域名入口优选 Android 工具。原生 Kotlin，仅申请联
 
 ## 当前版本
 
-**2.7.1**（[下载 `CF-Optimizer-2.7.1.apk`](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.0/CF-Optimizer-2.7.1.apk)，SHA-256：`d2e26ab5a56e0888ad21c6ae2e900a7446f7e7e548c2084a52babcb772409937`）
+**2.8.0**（[下载 `CF-Optimizer-2.8.0.apk`](https://github.com/Xiaowu7z/RR-Edge-Atlas/releases/download/v1.1/CF-Optimizer-2.8.0.apk)，SHA-256：`3758d8938ba573221caa83a2bd6f148eb43e88ca7f28cd8e74525242172764e7`）
 
-> 当前**未合并功能分支**中的 Android 2.7.1 源码已同步自定义域名与 Cloudflare CNAME 功能。上面的 v1.0 正式 APK 仍是原 2.7.1 发布包，不包含本分支新增功能。
+> 2.8.0 启用新的正式签名。已安装 2.7.1 的设备需要先卸载旧版再安装；卸载会清除应用本地历史记录。从 2.8.0 开始的后续正式版可以直接覆盖升级。证书指纹见 [RELEASE_SIGNING.md](RELEASE_SIGNING.md)。
 
-- 包名：`com.cfoptimizer`，versionCode 21，minSdk 29，targetSdk 34
+- 包名：`com.cfoptimizer`，versionCode 22，minSdk 29，targetSdk 34
 - IPv4 / IPv6 / 双栈独立测速
 - 均衡模式 + **亚洲入口狩猎**模式
 - 亚洲入口优先级：HKG > NRT > SIN > ICN > TPE；Full 阶段再次 trace 检查 POP 漂移
@@ -17,7 +17,7 @@ Cloudflare IP / 域名入口优选 Android 工具。原生 Kotlin，仅申请联
 - 自定义模式只建立用户列表的 DNS 快照，不混入内置池或 Nexus Mods 基准
 - 测速结果可一键预填为 Cloudflare CNAME 目标，也可在首页手动填写目标
 - Nexus Mods 固定基准、Final Address Floor、失败计 0、成功率/波动/TTFB/最佳与最差 IP
-- 50 条历史记录；2.7.1 修复主页内容超出屏幕后无法向下滚动、历史记录入口无法点击的问题
+- 50 条历史记录；保留 2.7.1 的主页滚动与历史入口修复
 
 历史 APK 继续保留在 [RR-vps 原仓库归档](https://github.com/Xiaowu7z/RR-vps/tree/main/assets/cf-optimizer)。
 
@@ -58,11 +58,13 @@ Cloudflare IP / 域名入口优选 Android 工具。原生 Kotlin，仅申请联
 
 标准 Gradle 环境可使用 JDK 17 + Android SDK 34 + Gradle 8.10.2 构建。
 
-CLI 工具链准备完成后可执行：
+CLI 工具链准备完成后可执行测试并构建本地 debug 包：
 
 ```bash
 ./test.sh
 ./build.sh
 ```
+
+正式签名必须从仓库外注入，参数与证书核验方式见 [RELEASE_SIGNING.md](RELEASE_SIGNING.md)。
 
 应用仅申请联网与网络状态权限。文件导入使用系统文档选择器，不申请读取全部存储空间的权限。

@@ -226,7 +226,7 @@ object CloudflareDns {
                 .url("https://api.cloudflare.com/client/v4$path")
                 .header("Authorization", "Bearer $token")
                 .header("Accept", "application/json")
-                .header("User-Agent", "RR-Edge-Atlas-Android/2.7.1")
+                .header("User-Agent", "RR-Edge-Atlas-Android/2.8.0")
             val body = SimpleJson.stringify(payload ?: emptyMap<String, Any?>()).toRequestBody(mediaType)
             when (method) {
                 "GET" -> builder.get()

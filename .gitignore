@@ -8,6 +8,10 @@ result*.json
 .vscode/
 android/.gradle/
 android/build/
+android/build-tests/
 android/app/build/
 android/*.apk
+android/*.keystore
+android/*.jks
+android/*.p12
 dist/
